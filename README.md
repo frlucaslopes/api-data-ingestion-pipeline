@@ -4,21 +4,23 @@ Pipeline de Engenharia de Dados desenvolvido em Python para ingestão, transform
 
 O projeto implementa uma arquitetura em camadas (Raw → Bronze → Silver → Gold), simulando um fluxo moderno de processamento de dados utilizado em ambientes corporativos.
 
-![alt text](<api-data-ingestion-pipeline - architecture.png>)
+![Architecture](assets/architecture.png)
 
 ---
 
 ## Objetivo
 
-Demonstrar na prática conceitos fundamentais de Engenharia de Dados:
+Demonstrar na prática conceitos fundamentais de Engenharia de Dados através da construção de um pipeline completo para ingestão, tratamento e análise de dados provenientes de uma API REST.
+
+Principais objetivos:
 
 - Consumo de APIs REST
-- Extração de dados em JSON
+- Ingestão de dados JSON
 - Conversão para Parquet
-- Normalização de dados semi-estruturados
-- Modelagem em camadas (Medallion Architecture)
+- Normalização de estruturas semi-estruturadas
+- Arquitetura Medallion (Raw, Bronze, Silver e Gold)
 - Criação de datasets analíticos
-- Geração de KPIs para análise de negócio
+- Geração de KPIs de negócio
 
 ---
 
@@ -32,27 +34,14 @@ Demonstrar na prática conceitos fundamentais de Engenharia de Dados:
 
 ---
 
-## Arquitetura
-```
-Fake Store API
-↓
-Extract
-↓
-Raw (JSON)
-↓
-Bronze (Parquet)
-↓
-Silver (Dados Normalizados)
-↓
-Gold (KPIs)
-```
----
-
 ## Estrutura do Projeto
 
-```
+```text
 api-data-ingestion-pipeline/
 
+├── assets/
+│   └── architecture.png
+│
 ├── data/
 │   ├── raw/
 │   ├── bronze/
@@ -61,6 +50,7 @@ api-data-ingestion-pipeline/
 │
 ├── notebooks/
 │   ├── exploration.ipynb
+│   ├── exploration_bronze.ipynb
 │   ├── exploration_silver.ipynb
 │   ├── exploration_gold.ipynb
 │   └── validate_gold.ipynb
@@ -75,143 +65,102 @@ api-data-ingestion-pipeline/
 ├── .gitignore
 └── README.md
 ```
----
 
-## Camadas do Pipeline
+## Arquitetura do Pipeline
 
-### Raw Layer
+O pipeline segue uma arquitetura inspirada no padrão Medallion Architecture:
 
-Responsável pela extração dos dados da API Fake Store.
+``` Raw → Bronze → Silver → Gold ```
 
-Arquivos gerados:
+Onde cada camada possui uma responsabilidade específica de armazenamento, tratamento e disponibilização dos dados.
 
-- products.json
-- users.json
-- carts.json
+# Camadas do Pipeline
+## Raw Layer
 
----
-
-### Bronze Layer
-
-Conversão dos arquivos JSON para formato Parquet.
+Responsável pela extração dos dados diretamente da API Fake Store.
 
 Arquivos gerados:
 
-- products.parquet
-- users.parquet
-- carts.parquet
+* products.json
+* users.json
+* carts.json
 
-Benefícios:
+## Bronze Layer
 
-- Melhor compressão
-- Melhor performance de leitura
-- Formato amplamente utilizado em Data Lakes
+Conversão dos dados JSON para formato Parquet.
 
----
+Arquivos gerados:
 
-### Silver Layer
+* products.parquet
+* users.parquet
+* carts.parquet
 
-Normalização dos dados semi-estruturados.
+### Benefícios:
+
+* Melhor compressão
+* Melhor performance de leitura
+* Formato amplamente utilizado em Data Lakes
+
+## Silver Layer
+
+Responsável pela limpeza, padronização e normalização dos dados.
 
 Transformações realizadas:
 
-#### Products
+Products
 
 Expansão da estrutura:
 
-rating
+```
+{
+  "rate": 3.9,
+  "count": 120
+}
+```
+Em:
 
-em:
+* rating_rate
+* rating_count
+* Users
 
-- rating_rate
-- rating_count
+### Expansão das estruturas:
 
-#### Users
+* name
+* address
+* geolocation
 
-Expansão de:
+### Remoção do campo:
 
-- name
-- address
-- geolocation
+* password
+* Carts
 
-Remoção de campos sensíveis:
+Normalização da lista de produtos para geração da tabela relacional:
 
-- password
+* cart_items
 
-#### Carts
+## Gold Layer
 
-Explosão da lista de produtos para geração da tabela:
-
-cart_items
-
----
-
-### Gold Layer
-
-Criação de datasets analíticos para consumo por dashboards e análises.
-
-KPIs gerados:
-
-- Produtos por categoria
-- Preço médio por categoria
-- Quantidade vendida por produto
-- Top produtos
-- Top usuários
+Camada responsável pela criação de datasets analíticos e KPIs.
 
 Arquivos gerados:
 
-- products_by_category.parquet
-- avg_price_by_category.parquet
-- product_sales.parquet
-- top_products.parquet
-- top_users.parquet
+* products_by_category.parquet
+* avg_price_by_category.parquet
+* product_sales.parquet
+* top_products.parquet
+* top_users.parquet
 
----
+## KPIs produzidos:
 
-## Exemplos de KPIs
+* Produtos por categoria
+* Preço médio por categoria
+* Quantidade vendida por produto
+* Ranking de produtos
+* Ranking de usuários
 
-### Produtos por Categoria
+## Principais Conceitos Aplicados
 
-| Categoria | Total |
-|------------|--------|
-| Electronics | 6 |
-| Jewelery | 4 |
-| Men's Clothing | 4 |
-| Women's Clothing | 6 |
-
----
-
-## Como Executar
-
-### Instalar dependências
-
-```bash
-pip install -r requirements.txt
-```
-
-### Executar extração
-```bash
-python src/extract.py
-```
-
-### Executar bronze
-```bash
-python src/bronze.py
-```
-
-### Executar Silver
-```bash
-python src/silver.py
-```
-
-### Gold
-```bash
-python src/gold.py
-```
-
-## Aprendizados
-
-Durante o desenvolvimento deste projeto foram aplicados conceitos de:
+Durante o desenvolvimento deste projeto foram aplicados conceitos como:
 
 * Engenharia de Dados
 * ETL
@@ -220,17 +169,55 @@ Durante o desenvolvimento deste projeto foram aplicados conceitos de:
 * Parquet
 * Data Lake
 * Medallion Architecture
-* Normalização de dados
-* Agregações analíticas
+* Normalização de dados semi-estruturados
+* Flatten de estruturas JSON
+* Explode de listas aninhadas
 * Joins
-* KPIs de negócio
+* Agregações
+* Geração de KPIs analíticos
+* Resultados
 
-## Próximas Evoluções
+O pipeline transforma dados originalmente disponibilizados em formato JSON por uma API REST em datasets estruturados e prontos para análise.
 
-Possíveis melhorias futuras:
+Os resultados finais são disponibilizados na camada Gold e podem ser consumidos por dashboards, notebooks analíticos ou ferramentas de BI.
+
+## Como Executar
+## Instalar dependências
+
+```pip install -r requirements.txt```
+
+```
+Executar extração
+python src/extract.py
+```
+```
+Executar Bronze
+python src/bronze.py
+```
+
+```
+Executar Silver
+python src/silver.py
+```
+
+```
+Executar Gold
+python src/gold.py
+```
+
+# Próximas Evoluções
+
+### Possíveis melhorias futuras:
 
 * Orquestração com Apache Airflow
 * Containerização com Docker
 * Processamento distribuído com PySpark
 * Testes automatizados
+* Integração com Cloud Storage
 * Deploy em ambiente cloud
+
+## Autor
+
+Lucas M. Lopes | Data Engineer
+
+Construindo pipelines e arquiteturas de dados escaláveis.
