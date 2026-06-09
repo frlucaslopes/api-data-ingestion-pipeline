@@ -28,7 +28,7 @@ def save_json(data, filename):
         )
 
 
-def main():
+def run_extract():
 
     endpoints = {
         "products.json": "https://fakestoreapi.com/products",
@@ -44,8 +44,8 @@ def main():
 
         save_json(data, filename)
 
-    print("Pipeline finalizado")
+    print("Extract concluído!")
 
 
 if __name__ == "__main__":
-    main()
+    run_extract()

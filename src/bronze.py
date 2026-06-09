@@ -19,7 +19,7 @@ def json_to_parquet(json_file, parquet_file):
     print(f"Arquivo salvo: {parquet_file}")
 
 
-def main():
+def run_bronze():
 
     datasets = [
         "products",
@@ -42,4 +42,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_bronze()
